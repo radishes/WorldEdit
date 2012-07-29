@@ -525,7 +525,7 @@ namespace WorldEdit
         {
             if (e.Parameters.Count != 1)
             {
-                e.Player.SendMessage("Invalid syntax! Proper syntax: //save <schematic>", Color.Red);
+                e.Player.SendMessage("Invalid syntax! Proper syntax: //save <schematic name>", Color.Red);
                 return;
             }
             if (!Tools.HasClipboard(e.Player.Index))
