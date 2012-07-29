@@ -27,9 +27,9 @@ namespace WorldEdit.Commands
                 for (int j = 0; j < yLen; j++)
                 {
                     Main.tile[i + x, j + y] = tiles[i, j];
-                    TSPlayer.All.SendTileSquare(i + x, j + y, 1);
                 }
             }
+            ResetSection();
             TShock.Players[plr].SendMessage(String.Format("Pasted clipboard to selection. ({0})", xLen * yLen), Color.Yellow);
         }
     }

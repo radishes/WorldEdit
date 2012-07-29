@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -26,7 +26,7 @@ namespace WorldEdit
         {
             get { return "MarioE"; }
         }
-        private Queue<WECommand> CommandQueue = new Queue<WECommand>();
+        private BlockingCollection<WECommand> CommandQueue = new BlockingCollection<WECommand>();
         private Thread CommandQueueThread;
         public override string Description
         {
@@ -279,16 +279,8 @@ namespace WorldEdit
         {
             while (!Netplay.disconnect)
             {
-                if (CommandQueue.Count != 0)
-                {
-                    WECommand command;
-                    lock (CommandQueue)
-                    {
-                        command = CommandQueue.Dequeue();
-                    }
-                    command.Execute();
-                }
-                Thread.Sleep(100);
+                WECommand command = CommandQueue.Take();
+                command.Execute();
             }
         }
 
@@ -329,7 +321,7 @@ namespace WorldEdit
             int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
             int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Enqueue(new BiomeCommand(x, y, x2, y2, e.Player.Index, biome1, biome2));
+            CommandQueue.Add(new BiomeCommand(x, y, x2, y2, e.Player.Index, biome1, biome2));
         }
         void Copy(CommandArgs e)
         {
@@ -344,7 +336,7 @@ namespace WorldEdit
             int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
             int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Enqueue(new CopyCommand(x, y, x2, y2, e.Player.Index));
+            CommandQueue.Add(new CopyCommand(x, y, x2, y2, e.Player.Index));
         }
         void Delete(CommandArgs e)
         {
@@ -391,7 +383,7 @@ namespace WorldEdit
                     return;
                 }
             }
-            CommandQueue.Enqueue(new FlipCommand(e.Player.Index, flip));
+            CommandQueue.Add(new FlipCommand(e.Player.Index, flip));
         }
         void Load(CommandArgs e)
         {
@@ -405,7 +397,7 @@ namespace WorldEdit
                 e.Player.SendMessage("Invalid schematic.", Color.Red);
                 return;
             }
-            CommandQueue.Enqueue(new LoadCommand(e.Player.Index, e.Parameters[0]));
+            CommandQueue.Add(new LoadCommand(e.Player.Index, e.Parameters[0]));
         }
         void Paste(CommandArgs e)
         {
@@ -421,7 +413,7 @@ namespace WorldEdit
                 return;
             }
 
-            CommandQueue.Enqueue(new PasteCommand(info.x, info.y, e.Player.Index));
+            CommandQueue.Add(new PasteCommand(info.x, info.y, e.Player.Index));
         }
         void PointCmd(CommandArgs e)
         {
@@ -453,7 +445,7 @@ namespace WorldEdit
                 e.Player.SendMessage("No redo history available.", Color.Red);
                 return;
             }
-            CommandQueue.Enqueue(new RedoCommand(e.Player.Index));
+            CommandQueue.Add(new RedoCommand(e.Player.Index));
         }
         void Replace(CommandArgs e)
         {
@@ -486,7 +478,7 @@ namespace WorldEdit
             int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
             int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Enqueue(new ReplaceCommand(x, y, x2, y2, e.Player.Index, tile1, tile2));
+            CommandQueue.Add(new ReplaceCommand(x, y, x2, y2, e.Player.Index, tile1, tile2));
         }
         void ReplaceWall(CommandArgs e)
         {
@@ -519,7 +511,7 @@ namespace WorldEdit
             int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
             int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Enqueue(new ReplaceWallCommand(x, y, x2, y2, e.Player.Index, wall1, wall2));
+            CommandQueue.Add(new ReplaceWallCommand(x, y, x2, y2, e.Player.Index, wall1, wall2));
         }
         void Save(CommandArgs e)
         {
@@ -533,7 +525,7 @@ namespace WorldEdit
                 e.Player.SendMessage("Invalid clipboard.", Color.Red);
                 return;
             }
-            CommandQueue.Enqueue(new SaveCommand(e.Player.Index, e.Parameters[0]));
+            CommandQueue.Add(new SaveCommand(e.Player.Index, e.Parameters[0]));
         }
         void Select(CommandArgs e)
         {
@@ -590,7 +582,7 @@ namespace WorldEdit
             int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
             int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Enqueue(new SetCommand(x, y, x2, y2, e.Player.Index, ID));
+            CommandQueue.Add(new SetCommand(x, y, x2, y2, e.Player.Index, ID));
         }
         void SetWall(CommandArgs e)
         {
@@ -617,7 +609,7 @@ namespace WorldEdit
             int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
             int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Enqueue(new SetWallCommand(x, y, x2, y2, e.Player.Index, ID));
+            CommandQueue.Add(new SetWallCommand(x, y, x2, y2, e.Player.Index, ID));
         }
         void Undo(CommandArgs e)
         {
@@ -626,7 +618,7 @@ namespace WorldEdit
                 e.Player.SendMessage("No undo history available.", Color.Red);
                 return;
             }
-            CommandQueue.Enqueue(new UndoCommand(e.Player.Index));
+            CommandQueue.Add(new UndoCommand(e.Player.Index));
         }
     }
 }

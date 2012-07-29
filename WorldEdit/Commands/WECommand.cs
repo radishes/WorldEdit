@@ -33,6 +33,23 @@ namespace WorldEdit.Commands
         }
 
         public abstract void Execute();
+        public void ResetSection()
+        {
+            int lowX = Netplay.GetSectionX(x);
+            int highX = Netplay.GetSectionX(x2);
+            int lowY = Netplay.GetSectionY(y);
+            int highY = Netplay.GetSectionY(y2);
+            foreach (ServerSock sock in Netplay.serverSock)
+            {
+                for (int i = lowX; i <= highX; i++)
+                {
+                    for (int j = lowY; j <= highY; j++)
+                    {
+                        sock.tileSection[i, j] = false;
+                    }
+                }
+            }
+        }
         public void SetTile(int i, int j, byte tile)
         {
             switch (tile)

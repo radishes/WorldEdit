@@ -16,7 +16,7 @@ namespace WorldEdit.Commands
         public override void Execute()
         {
             Tools.Redo(plr);
-            TShock.Players[plr].SendMessage("Redid last action.", Color.Yellow);
+            TShock.Players[plr].SendMessage("Redid last action.", Color.Green);
         }
     }
 }

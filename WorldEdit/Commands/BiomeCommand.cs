@@ -41,7 +41,6 @@ namespace WorldEdit.Commands
                                     {
                                         Main.tile[i, j].type = WorldEdit.BiomeConversions[data2][k];
                                     }
-                                    TSPlayer.All.SendTileSquare(i, j, 1);
                                     edits++;
                                     break;
                                 }
@@ -49,6 +48,7 @@ namespace WorldEdit.Commands
                         }
                     }
                 }
+                ResetSection();
             }
             string msg = String.Format("Converted {0} to {1}. ({2})", WorldEdit.BiomeNames[data], WorldEdit.BiomeNames[data2], edits);
             TShock.Players[plr].SendMessage(msg, Color.Yellow);

@@ -26,11 +26,11 @@ namespace WorldEdit.Commands
                     if (selectFunc(i, j, plr) && Main.tile[i, j].wall != data)
                     {
                         Main.tile[i, j].wall = data;
-                        TSPlayer.All.SendTileSquare(i, j, 1);
                         edits++;
                     }
                 }
             }
+            ResetSection();
 
             string wallName = "wall " + data;
             if (data == 0)

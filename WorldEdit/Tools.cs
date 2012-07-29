@@ -62,9 +62,9 @@ namespace WorldEdit
                     for (int j = 0; j < yLen; j++)
                     {
                         Main.tile[i + x, j + y] = ReadTile(reader);
-                        TSPlayer.All.SendTileSquare(i + x, j + y, 1);
                     }
                 }
+                ResetSection(x, y, x + xLen, y + yLen);
             }
         }
         public static void PrepareUndo(int x, int y, int x2, int y2, int plr)
@@ -129,6 +129,23 @@ namespace WorldEdit
             LoadWorldSection(redoPath);
             File.Delete(redoPath);
         }
+        public static void ResetSection(int x, int y, int x2, int y2)
+        {
+            int lowX = Netplay.GetSectionX(x);
+            int highX = Netplay.GetSectionX(x2);
+            int lowY = Netplay.GetSectionY(y);
+            int highY = Netplay.GetSectionY(y2);
+            foreach (ServerSock sock in Netplay.serverSock)
+            {
+                for (int i = lowX; i <= highX; i++)
+                {
+                    for (int j = lowY; j <= highY; j++)
+                    {
+                        sock.tileSection[i, j] = false;
+                    }
+                }
+            }
+        }
         public static void SaveClipboard(Tile[,] tiles, int plr)
         {
             SaveWorldData(tiles, Path.Combine("worldedit", String.Format("clipboard-{0}.dat", plr)));
@@ -162,7 +179,7 @@ namespace WorldEdit
                 {
                     for (int j = y; j <= y2; j++)
                     {
-                        WriteTile(writer, Main.tile[i, j] ?? new Tile());
+                        WriteTile(writer, Main.tile[i, j]);
                     }
                 }
             }

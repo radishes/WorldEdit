@@ -16,7 +16,7 @@ namespace WorldEdit.Commands
         public override void Execute()
         {
             Tools.Undo(plr);
-            TShock.Players[plr].SendMessage("Undid last action.", Color.Yellow);
+            TShock.Players[plr].SendMessage("Undid last action.", Color.Green);
         }
     }
 }

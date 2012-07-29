@@ -36,11 +36,11 @@ namespace WorldEdit.Commands
                             || (data == 152 && Main.tile[i, j].wire)))
                         {
                             SetTile(i, j, data2);
-                            TSPlayer.All.SendTileSquare(i, j, 1);
                             edits++;
                         }
                     }
                 }
+                ResetSection();
             }
 
             string tileName1 = "tile " + data;
