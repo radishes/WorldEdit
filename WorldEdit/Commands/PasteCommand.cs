@@ -20,6 +20,8 @@ namespace WorldEdit.Commands
             Tile[,] tiles = Tools.LoadClipboard(plr);
             int xLen = tiles.GetLength(0);
             int yLen = tiles.GetLength(1);
+            x2 = x + xLen;
+            y2 = y + yLen;
             Tools.PrepareUndo(x, y, x + xLen, y + yLen, plr);
 
             for (int i = 0; i < xLen; i++)
