@@ -62,6 +62,7 @@ namespace WorldEdit
                     for (int j = 0; j < yLen; j++)
                     {
                         Main.tile[i + x, j + y] = ReadTile(reader);
+                        Main.tile[i + x, j + y].skipLiquid = true;
                     }
                 }
                 ResetSection(x, y, x + xLen, y + yLen);
@@ -92,6 +93,11 @@ namespace WorldEdit
                     tile.frameNumber = reader.ReadByte();
                     tile.frameX = reader.ReadInt16();
                     tile.frameY = reader.ReadInt16();
+                }
+                else
+                {
+                    tile.frameX = -1;
+                    tile.frameY = -1;
                 }
             }
             if ((flags & 2) == 2)
