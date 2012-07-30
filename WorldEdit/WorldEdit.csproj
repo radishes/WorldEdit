@@ -48,13 +48,14 @@
   <ItemGroup>
     <Compile Include="Commands\BiomeCommand.cs" />
     <Compile Include="Commands\CopyCommand.cs" />
+    <Compile Include="Commands\DrainCommand.cs" />
     <Compile Include="Commands\FlipCommand.cs" />
-    <Compile Include="Commands\LoadCommand.cs" />
+    <Compile Include="Commands\FloodCommand.cs" />
     <Compile Include="Commands\PasteCommand.cs" />
     <Compile Include="Commands\RedoCommand.cs" />
     <Compile Include="Commands\ReplaceCommand.cs" />
     <Compile Include="Commands\ReplaceWallCommand.cs" />
-    <Compile Include="Commands\SaveCommand.cs" />
+    <Compile Include="Commands\RotateCommand.cs" />
     <Compile Include="Commands\SetWallCommand.cs" />
     <Compile Include="Commands\UndoCommand.cs" />
     <Compile Include="Commands\WECommand.cs" />

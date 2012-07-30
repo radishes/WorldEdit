@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Terraria;
-using TShockAPI;
 
 namespace WorldEdit
 {
@@ -24,10 +20,6 @@ namespace WorldEdit
         public static bool HasClipboard(int plr)
         {
             return File.Exists(Path.Combine("worldedit", String.Format("clipboard-{0}.dat", plr)));
-        }
-        public static Tile[,] LoadClipboard(int plr)
-        {
-            return LoadWorldData(Path.Combine("worldedit", String.Format("clipboard-{0}.dat", plr)));
         }
         public static Tile[,] LoadWorldData(string path)
         {
@@ -70,6 +62,7 @@ namespace WorldEdit
         }
         public static void PrepareUndo(int x, int y, int x2, int y2, int plr)
         {
+            WorldEdit.Players[plr].redoLevel = -1;
             WorldEdit.Players[plr].undoLevel++;
             string path = Path.Combine("worldedit", String.Format("undo-{0}-{1}.dat", plr, WorldEdit.Players[plr].undoLevel));
             SaveWorldSection(x, y, x2, y2, path);
@@ -79,7 +72,7 @@ namespace WorldEdit
                 File.Delete(fileName);
             }
         }
-        private static Tile ReadTile(BinaryReader reader)
+        public static Tile ReadTile(BinaryReader reader)
         {
             Tile tile = new Tile();
             byte flags = reader.ReadByte();
@@ -128,8 +121,8 @@ namespace WorldEdit
             {
                 int x = reader.ReadInt32();
                 int y = reader.ReadInt32();
-                int x2 = x + reader.ReadInt32();
-                int y2 = y + reader.ReadInt32();
+                int x2 = x + reader.ReadInt32() - 1;
+                int y2 = y + reader.ReadInt32() - 1;
                 SaveWorldSection(x, y, x2, y2, undoPath);
             }
             LoadWorldSection(redoPath);
@@ -151,10 +144,6 @@ namespace WorldEdit
                     }
                 }
             }
-        }
-        public static void SaveClipboard(Tile[,] tiles, int plr)
-        {
-            SaveWorldData(tiles, Path.Combine("worldedit", String.Format("clipboard-{0}.dat", plr)));
         }
         public static void SaveWorldData(Tile[,] tiles, string path)
         {
@@ -190,7 +179,7 @@ namespace WorldEdit
                 }
             }
         }
-        private static void WriteTile(BinaryWriter writer, Tile tile)
+        public static void WriteTile(BinaryWriter writer, Tile tile)
         {
             byte flags = 0;
             if (tile.active)
@@ -244,8 +233,8 @@ namespace WorldEdit
             {
                 int x = reader.ReadInt32();
                 int y = reader.ReadInt32();
-                int x2 = x + reader.ReadInt32();
-                int y2 = y + reader.ReadInt32();
+                int x2 = x + reader.ReadInt32() - 1;
+                int y2 = y + reader.ReadInt32() - 1;
                 SaveWorldSection(x, y, x2, y2, redoPath);
             }
             LoadWorldSection(undoPath);

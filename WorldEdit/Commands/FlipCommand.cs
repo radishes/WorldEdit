@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
 using Terraria;
 using TShockAPI;
 
@@ -9,32 +7,40 @@ namespace WorldEdit.Commands
 {
     public class FlipCommand : WECommand
     {
+        private byte direction;
+
         public FlipCommand(int plr, byte direction)
             : base(0, 0, 0, 0, plr)
         {
-            data = direction;
+            this.direction = direction;
         }
 
         public override void Execute()
         {
-            Tile[,] tiles = Tools.LoadClipboard(plr);
-            int maxX = tiles.GetLength(0);
-            int maxY = tiles.GetLength(1);
-            int realI = 0;
-            int realJ = 0;
-            Tile[,] flippedTiles = new Tile[maxX, maxY];
+            string clipboardPath = Path.Combine("worldedit", String.Format("clipboard-{0}.dat", plr));
+            Tile[,] tiles = Tools.LoadWorldData(clipboardPath);
+            int lenX = tiles.GetLength(0);
+            int lenY = tiles.GetLength(1);
+            bool flipX = (direction & 1) == 1;
+            bool flipY = (direction & 2) == 2;
+            int endX = flipX ? -1 : lenX;
+            int endY = flipY ? -1 : lenY;
+            int incX = flipX ? -1 : 1;
+            int incY = flipY ? -1 : 1;
 
-            for (int i = 0; i < maxX; i++)
+            using (BinaryWriter writer = new BinaryWriter(new FileStream(clipboardPath, FileMode.Create)))
             {
-                for (int j = 0; j < maxY; j++)
+                writer.Write(lenX);
+                writer.Write(lenY);
+                for (int i = flipX ? lenX - 1 : 0; i != endX; i += incX)
                 {
-                    realI = (data & 1) == 1 ? maxX - i - 1 : i;
-                    realJ = (data & 2) == 2 ? maxY - j - 1 : j;
-                    flippedTiles[realI, realJ] = tiles[i, j];
+                    for (int j = flipY ? lenY - 1 : 0; j != endY; j += incY)
+                    {
+                        Tools.WriteTile(writer, tiles[i, j]);
+                    }
                 }
             }
-            Tools.SaveClipboard(flippedTiles, plr);
-            TShock.Players[plr].SendMessage(String.Format("Flipped clipboard. ({0})", maxX * maxY), Color.Yellow);
+            TShock.Players[plr].SendMessage(String.Format("Flipped clipboard."), Color.Green);
         }
     }
 }

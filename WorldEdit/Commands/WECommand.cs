@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Terraria;
-using TShockAPI;
 
 namespace WorldEdit.Commands
 {
     public abstract class WECommand
     {
-        public byte data;
-        public byte data2;
-        public int plr;
-        public Func<int, int, int, bool> selectFunc = (x, y, plr) => true;
-        public int x;
-        public int x2;
-        public int y;
-        public int y2;
+        protected int plr;
+        protected Func<int, int, int, bool> selectFunc = (x, y, plr) => true;
+        protected int x;
+        protected int x2;
+        protected int y;
+        protected int y2;
 
-        public WECommand(int x, int y, int x2, int y2, int plr)
+        protected WECommand(int x, int y, int x2, int y2, int plr)
         {
             this.plr = plr;
             int select = WorldEdit.Players[plr].select;
@@ -32,6 +26,25 @@ namespace WorldEdit.Commands
             this.y2 = y2;
         }
 
+        public void Clamp()
+        {
+            if (x < 0)
+            {
+                x = 0;
+            }
+            if (y < 0)
+            {
+                y = 0;
+            }
+            if (x2 >= Main.maxTilesX)
+            {
+                x2 = Main.maxTilesX - 1;
+            }
+            if (y2 >= Main.maxTilesY)
+            {
+                y2 = Main.maxTilesY - 1;
+            }
+        }
         public abstract void Execute();
         public void ResetSection()
         {

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Terraria;
 using TShockAPI;
 
@@ -17,19 +14,20 @@ namespace WorldEdit.Commands
 
         public override void Execute()
         {
-            int xLen = x2 - x + 1;
-            int yLen = y2 - y + 1;
-            Tile[,] tiles = new Tile[xLen, yLen];
-            for (int i = 0; i < xLen; i++)
+            string clipboardPath = Path.Combine("worldedit", String.Format("clipboard-{0}.dat", plr));
+            using (BinaryWriter writer = new BinaryWriter(new FileStream(clipboardPath, FileMode.Create)))
             {
-                for (int j = 0; j < yLen; j++)
+                writer.Write(x2 - x + 1);
+                writer.Write(y2 - y + 1);
+                for (int i = x; i <= x2; i++)
                 {
-                    tiles[i, j] = Main.tile[i + x, j + y];
+                    for (int j = y; j <= y2; j++)
+                    {
+                        Tools.WriteTile(writer, Main.tile[i, j]);
+                    }
                 }
             }
-
-            Tools.SaveClipboard(tiles, plr);
-            TShock.Players[plr].SendMessage(String.Format("Copied selection to clipboard. ({0})", xLen * yLen), Color.Yellow);
+            TShock.Players[plr].SendMessage(String.Format("Copied selection to clipboard."), Color.Green);
         }
     }
 }

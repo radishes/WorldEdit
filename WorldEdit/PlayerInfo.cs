@@ -1,6 +1,4 @@
-﻿using Terraria;
-
-namespace WorldEdit
+﻿namespace WorldEdit
 {
     public class PlayerInfo
     {

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Terraria;
 using TShockAPI;
 
@@ -9,10 +6,12 @@ namespace WorldEdit.Commands
 {
     public class SetWallCommand : WECommand
     {
+        private byte wall;
+
         public SetWallCommand(int x, int y, int x2, int y2, int plr, byte wall)
             : base(x, y, x2, y2, plr)
         {
-            data = wall;
+            this.wall = wall;
         }
 
         public override void Execute()
@@ -23,21 +22,21 @@ namespace WorldEdit.Commands
             {
                 for (int j = y; j <= y2; j++)
                 {
-                    if (selectFunc(i, j, plr) && Main.tile[i, j].wall != data)
+                    if (selectFunc(i, j, plr) && Main.tile[i, j].wall != wall)
                     {
-                        Main.tile[i, j].wall = data;
+                        Main.tile[i, j].wall = wall;
                         edits++;
                     }
                 }
             }
             ResetSection();
 
-            string wallName = "wall " + data;
-            if (data == 0)
+            string wallName = "wall " + wall;
+            if (wall == 0)
             {
                 wallName = "air";
             }
-            TShock.Players[plr].SendMessage(String.Format("Set walls to {0}. ({1})", wallName, edits), Color.Yellow);
+            TShock.Players[plr].SendMessage(String.Format("Set walls to {0}. ({1})", wallName, edits), Color.Green);
         }
     }
 }

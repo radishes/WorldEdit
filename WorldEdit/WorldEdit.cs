@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using Hooks;
 using Terraria;
@@ -100,15 +101,16 @@ namespace WorldEdit
         {
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Biome, "/biome"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Copy, "/copy"));
-            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Delete, "/delete"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Drain, "/drain"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Flip, "/flip"));
-            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Load, "/load"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Flood, "/flood"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Paste, "/paste"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", PointCmd, "/point"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Redo, "/redo"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Replace, "/replace"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", ReplaceWall, "/replacewall"));
-            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Save, "/save"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Rotate, "/rotate"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Schematic, "/schematic", "/schem"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Select, "/select"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Set, "/set"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", SetWall, "/setwall"));
@@ -133,6 +135,7 @@ namespace WorldEdit
             BiomeNames.Add("normal");
             #endregion
             #region Selections
+            Selections.Add((i, j, plr) => ((i + j) & 1) == 0);
             Selections.Add((i, j, plr) => ((i + j) & 1) == 1);
             Selections.Add((i, j, plr) =>
             {
@@ -159,6 +162,7 @@ namespace WorldEdit
             {
                 return i == Players[plr].x || i == Players[plr].x2 || j == Players[plr].y || j == Players[plr].y2;
             });
+            SelectionNames.Add("altcheckers");
             SelectionNames.Add("checkers");
             SelectionNames.Add("ellipse");
             SelectionNames.Add("normal");
@@ -280,6 +284,7 @@ namespace WorldEdit
             while (!Netplay.disconnect)
             {
                 WECommand command = CommandQueue.Take();
+                command.Clamp();
                 command.Execute();
             }
         }
@@ -338,20 +343,42 @@ namespace WorldEdit
             int y2 = Math.Max(info.y, info.y2);
             CommandQueue.Add(new CopyCommand(x, y, x2, y2, e.Player.Index));
         }
-        void Delete(CommandArgs e)
+        void Drain(CommandArgs e)
         {
             if (e.Parameters.Count != 1)
             {
-                e.Player.SendMessage("Invalid syntax! Proper syntax: //delete <schematic>", Color.Red);
+                e.Player.SendMessage("Invalid syntax! Proper syntax: //drain <radius>", Color.Red);
                 return;
             }
-            if (!File.Exists(Path.Combine("worldedit", String.Format("{0}.schematic", e.Parameters[0]))))
+
+            int radius;
+            if (!int.TryParse(e.Parameters[0], out radius) || radius <= 0)
             {
-                e.Player.SendMessage("Invalid schematic.", Color.Red);
+                e.Player.SendMessage("Invalid radius.", Color.Red);
                 return;
             }
-            File.Delete(Path.Combine("worldedit", String.Format("{0}.schematic", e.Parameters[0])));
-            e.Player.SendMessage(String.Format("Deleted schematic \"{0}\".", e.Parameters[0]), Color.Green);
+            CommandQueue.Add(new DrainCommand(e.Player.TileX, e.Player.TileY, e.Player.Index, radius));
+        }
+        void Flood(CommandArgs e)
+        {
+            if (e.Parameters.Count != 2)
+            {
+                e.Player.SendMessage("Invalid syntax! Proper syntax: //flood <lava|water> <radius>", Color.Red);
+                return;
+            }
+            if (e.Parameters[0].ToLower() != "water" && e.Parameters[0].ToLower() != "lava")
+            {
+                e.Player.SendMessage("Invalid syntax! Proper syntax: //flood <lava|water> <radius>", Color.Red);
+                return;
+            }
+
+            int radius;
+            if (!int.TryParse(e.Parameters[1], out radius) || radius <= 0)
+            {
+                e.Player.SendMessage("Invalid radius.", Color.Red);
+                return;
+            }
+            CommandQueue.Add(new FloodCommand(e.Player.TileX, e.Player.TileY, e.Player.Index, radius, e.Parameters[0].ToLower() == "lava"));
         }
         void Flip(CommandArgs e)
         {
@@ -384,20 +411,6 @@ namespace WorldEdit
                 }
             }
             CommandQueue.Add(new FlipCommand(e.Player.Index, flip));
-        }
-        void Load(CommandArgs e)
-        {
-            if (e.Parameters.Count != 1)
-            {
-                e.Player.SendMessage("Invalid syntax! Proper syntax: //load <schematic>", Color.Red);
-                return;
-            }
-            if (!File.Exists(Path.Combine("worldedit", String.Format("{0}.schematic", e.Parameters[0]))))
-            {
-                e.Player.SendMessage("Invalid schematic.", Color.Red);
-                return;
-            }
-            CommandQueue.Add(new LoadCommand(e.Player.Index, e.Parameters[0]));
         }
         void Paste(CommandArgs e)
         {
@@ -513,11 +526,11 @@ namespace WorldEdit
             int y2 = Math.Max(info.y, info.y2);
             CommandQueue.Add(new ReplaceWallCommand(x, y, x2, y2, e.Player.Index, wall1, wall2));
         }
-        void Save(CommandArgs e)
+        void Rotate(CommandArgs e)
         {
             if (e.Parameters.Count != 1)
             {
-                e.Player.SendMessage("Invalid syntax! Proper syntax: //save <schematic name>", Color.Red);
+                e.Player.SendMessage("Invalid syntax! Proper syntax: //rotate <angle>", Color.Red);
                 return;
             }
             if (!Tools.HasClipboard(e.Player.Index))
@@ -525,7 +538,13 @@ namespace WorldEdit
                 e.Player.SendMessage("Invalid clipboard.", Color.Red);
                 return;
             }
-            CommandQueue.Add(new SaveCommand(e.Player.Index, e.Parameters[0]));
+            int degrees;
+            if (!int.TryParse(e.Parameters[0], out degrees) || degrees % 90 != 0)
+            {
+                e.Player.SendMessage("Invalid angle.", Color.Red);
+                return;
+            }
+            CommandQueue.Add(new RotateCommand(e.Player.Index, degrees));
         }
         void Select(CommandArgs e)
         {
@@ -610,6 +629,123 @@ namespace WorldEdit
             int x2 = Math.Max(info.x, info.x2);
             int y2 = Math.Max(info.y, info.y2);
             CommandQueue.Add(new SetWallCommand(x, y, x2, y2, e.Player.Index, ID));
+        }
+        void Schematic(CommandArgs e)
+        {
+            if (e.Parameters.Count == 0)
+            {
+                e.Player.SendMessage("Invalid syntax! Proper syntax: //schematic <cmd> [arg]", Color.Red);
+                return;
+            }
+            string subCmd = e.Parameters[0].ToLower();
+            switch (subCmd)
+            {
+                case "delete":
+                    {
+                        if (e.Parameters.Count != 2)
+                        {
+                            e.Player.SendMessage("Invalid syntax! Proper syntax: //schematic delete <name>", Color.Red);
+                            break;
+                        }
+                        string schematicPath = Path.Combine("worldedit", String.Format("schematic-{0}.dat", e.Parameters[1]));
+                        if (!File.Exists(schematicPath))
+                        {
+                            e.Player.SendMessage("Invalid schematic.", Color.Red);
+                            break;
+                        }
+                        File.Delete(schematicPath);
+                        e.Player.SendMessage("Deleted schematic.", Color.Green);
+                    }
+                    break;
+                case "list":
+                    {
+                        if (e.Parameters.Count != 1 && e.Parameters.Count != 2)
+                        {
+                            e.Player.SendMessage("Invalid syntax! Proper syntax: //schematic list [page]", Color.Red);
+                            break;
+                        }
+
+                        List<string> schematics = new List<string>(Directory.EnumerateFiles("worldedit", "schematic-*.dat"));
+                        if (schematics.Count == 0)
+                        {
+                            e.Player.SendMessage("No schematics exist.", Color.Red);
+                            break;
+                        }
+
+                        int maxPages = (int)Math.Ceiling(schematics.Count / 15d);
+                        int page = 1;
+                        if (e.Parameters.Count == 2)
+                        {
+                            if (!int.TryParse(e.Parameters[1], out page) || page <= 0 || page > maxPages)
+                            {
+                                e.Player.SendMessage("Invalid page.", Color.Red);
+                                break;
+                            }
+                        }
+                        page--;
+
+                        e.Player.SendMessage(String.Format("Schematics: (Page {0}/{1})", page + 1, maxPages), Color.Green);
+                        StringBuilder line = new StringBuilder();
+                        for (int i = page * 15; i < page * 15 + 15 && i < schematics.Count; i++)
+                        {
+                            string schematic = schematics[i];
+                            line.Append(schematic.Substring(20, schematic.Length - 24));
+                            if ((i + 1) % 5 == 0)
+                            {
+                                e.Player.SendMessage(line.ToString(), Color.Yellow);
+                                line.Clear();
+                            }
+                            else if (i != schematics.Count - 1)
+                            {
+                                line.Append(", ");
+                            }
+                        }
+                        if (line.Length != 0)
+                        {
+                            e.Player.SendMessage(line.ToString(), Color.Yellow);
+                        }
+                    }
+                    break;
+                case "load":
+                    {
+                        if (e.Parameters.Count != 2)
+                        {
+                            e.Player.SendMessage("Invalid syntax! Proper syntax: //schematic load <name>", Color.Red);
+                            break;
+                        }
+                        string schematicPath = Path.Combine("worldedit", String.Format("schematic-{0}.dat", e.Parameters[1]));
+                        if (!File.Exists(schematicPath))
+                        {
+                            e.Player.SendMessage("Invalid schematic.", Color.Red);
+                            return;
+                        }
+                        string clipboardPath = Path.Combine("worldedit", String.Format("clipboard-{0}.dat", e.Player.Index));
+                        File.Copy(schematicPath, clipboardPath, true);
+                        e.Player.SendMessage("Loaded schematic to clipboard.", Color.Green);
+                    }
+                    break;
+                case "save":
+                    {
+                        if (e.Parameters.Count != 2)
+                        {
+                            e.Player.SendMessage("Invalid syntax! Proper syntax: //schematic save <name>", Color.Red);
+                            break;
+                        }
+                        string clipboardPath = Path.Combine("worldedit", String.Format("clipboard-{0}.dat", e.Player.Index));
+                        if (!File.Exists(clipboardPath))
+                        {
+                            e.Player.SendMessage("Invalid clipboard.", Color.Red);
+                            break;
+                        }
+                        string schematicPath = Path.Combine("worldedit", String.Format("schematic-{0}.dat", e.Parameters[1]));
+                        File.Copy(clipboardPath, schematicPath, true);
+                        e.Player.SendMessage("Saved clipboard to schematic.", Color.Green);
+                    }
+                    break;
+                default:
+                    e.Player.SendMessage("Unknown subcommand.", Color.Red);
+                    break;
+            }
         }
         void Undo(CommandArgs e)
         {

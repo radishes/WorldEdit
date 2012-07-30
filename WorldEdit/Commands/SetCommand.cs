@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Terraria;
 using TShockAPI;
 
@@ -11,10 +8,12 @@ namespace WorldEdit.Commands
     {
         private static string[] SpecialTileNames = { "air", "lava", "water", "wire", "no wire" };
 
+        private byte tile;
+
         public SetCommand(int x, int y, int x2, int y2, int plr, byte tile)
             : base(x, y, x2, y2, plr)
         {
-            data = tile;
+            this.tile = tile;
         }
 
         public override void Execute()
@@ -26,26 +25,26 @@ namespace WorldEdit.Commands
                 for (int j = y; j <= y2; j++)
                 {
                     if (selectFunc(i, j, plr) &&
-                        ((data < 149 && (!Main.tile[i, j].active || Main.tile[i, j].type != data))
-                        || (data == 149 && (Main.tile[i, j].active || Main.tile[i, j].liquid > 0))
-                        || (data == 150)
-                        || (data == 151)
-                        || (data == 152 && !Main.tile[i, j].wire)
-                        || (data == 153 && Main.tile[i, j].wire)))
+                        ((tile < 149 && (!Main.tile[i, j].active || Main.tile[i, j].type != tile))
+                        || (tile == 149 && (Main.tile[i, j].active || Main.tile[i, j].liquid > 0))
+                        || (tile == 150)
+                        || (tile == 151)
+                        || (tile == 152 && !Main.tile[i, j].wire)
+                        || (tile == 153 && Main.tile[i, j].wire)))
                     {
-                        SetTile(i, j, data);
+                        SetTile(i, j, tile);
                         edits++;
                     }
                 }
             }
             ResetSection();
 
-            string tileName = "tile " + data;
-            if (data >= 149)
+            string tileName = "tile " + tile;
+            if (tile >= 149)
             {
-                tileName = SpecialTileNames[data - 149];
+                tileName = SpecialTileNames[tile - 149];
             }
-            TShock.Players[plr].SendMessage(String.Format("Set tiles to {0}. ({1})", tileName, edits), Color.Yellow);
+            TShock.Players[plr].SendMessage(String.Format("Set tiles to {0}. ({1})", tileName, edits), Color.Green);
         }
     }
 }
