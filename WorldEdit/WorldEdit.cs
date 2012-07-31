@@ -464,7 +464,7 @@ namespace WorldEdit
         {
             if (e.Parameters.Count != 2)
             {
-                e.Player.SendMessage("Invalid syntax! Proper syntax: //replace <tile1> <tile2>");
+                e.Player.SendMessage("Invalid syntax! Proper syntax: //replace <tile1> <tile2>", Color.Red);
                 return;
             }
             PlayerInfo info = Players[e.Player.Index];
@@ -474,16 +474,26 @@ namespace WorldEdit
                 return;
             }
 
-            byte tile1 = 0;
-            if (!(TileNames.TryGetValue(e.Parameters[0].ToLower(), out tile1) || (byte.TryParse(e.Parameters[0], out tile1) && tile1 < 149)))
+            List<byte> values1 = Tools.GetTileByName(e.Parameters[0].ToLower());
+            if (values1.Count == 0)
             {
                 e.Player.SendMessage("Invalid tile.", Color.Red);
                 return;
             }
-            byte tile2 = 0;
-            if (!(TileNames.TryGetValue(e.Parameters[1].ToLower(), out tile2) || (byte.TryParse(e.Parameters[1], out tile2) && tile2 < 149)))
+            if (values1.Count > 1)
+            {
+                e.Player.SendMessage(String.Format("More than one tile ({0}) matched.", values1.Count), Color.Red);
+                return;
+            }
+            List<byte> values2 = Tools.GetTileByName(e.Parameters[1].ToLower());
+            if (values2.Count == 0)
             {
                 e.Player.SendMessage("Invalid tile.", Color.Red);
+                return;
+            }
+            if (values2.Count > 1)
+            {
+                e.Player.SendMessage(String.Format("More than one tile ({0}) matched.", values2.Count), Color.Red);
                 return;
             }
 
@@ -491,13 +501,13 @@ namespace WorldEdit
             int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
             int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Add(new ReplaceCommand(x, y, x2, y2, e.Player.Index, tile1, tile2));
+            CommandQueue.Add(new ReplaceCommand(x, y, x2, y2, e.Player.Index, values1[0], values2[0]));
         }
         void ReplaceWall(CommandArgs e)
         {
             if (e.Parameters.Count != 2)
             {
-                e.Player.SendMessage("Invalid syntax! Proper syntax: //replacewall <wall1> <wall2>");
+                e.Player.SendMessage("Invalid syntax! Proper syntax: //replacewall <wall1> <wall2>", Color.Red);
                 return;
             }
             PlayerInfo info = Players[e.Player.Index];
@@ -507,16 +517,26 @@ namespace WorldEdit
                 return;
             }
 
-            byte wall1 = 0;
-            if (!(WallNames.TryGetValue(e.Parameters[0].ToLower(), out wall1) || (byte.TryParse(e.Parameters[0], out wall1) && wall1 < 32)))
+            List<byte> values1 = Tools.GetWallByName(e.Parameters[0].ToLower());
+            if (values1.Count == 0)
             {
                 e.Player.SendMessage("Invalid wall.", Color.Red);
                 return;
             }
-            byte wall2 = 0;
-            if (!(WallNames.TryGetValue(e.Parameters[1].ToLower(), out wall2) || (byte.TryParse(e.Parameters[1], out wall2) && wall2 < 32)))
+            if (values1.Count > 1)
+            {
+                e.Player.SendMessage(String.Format("More than one wall ({0}) matched.", values1.Count), Color.Red);
+                return;
+            }
+            List<byte> values2 = Tools.GetTileByName(e.Parameters[1].ToLower());
+            if (values2.Count == 0)
             {
                 e.Player.SendMessage("Invalid wall.", Color.Red);
+                return;
+            }
+            if (values2.Count > 1)
+            {
+                e.Player.SendMessage(String.Format("More than one wall ({0}) matched.", values2.Count), Color.Red);
                 return;
             }
 
@@ -524,7 +544,7 @@ namespace WorldEdit
             int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
             int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Add(new ReplaceWallCommand(x, y, x2, y2, e.Player.Index, wall1, wall2));
+            CommandQueue.Add(new ReplaceWallCommand(x, y, x2, y2, e.Player.Index, values1[0], values2[0]));
         }
         void Rotate(CommandArgs e)
         {
@@ -586,22 +606,27 @@ namespace WorldEdit
                 return;
             }
 
-            byte ID;
+            List<byte> values = Tools.GetTileByName(e.Parameters[0].ToLower());
             if (e.Parameters[0].ToLower() == "nowire")
             {
-                ID = 153;
+                values.Add(153);
             }
-            else if (!(TileNames.TryGetValue(e.Parameters[0].ToLower(), out ID) || (byte.TryParse(e.Parameters[0], out ID) && ID < 149)))
+            if (values.Count == 0)
             {
                 e.Player.SendMessage("Invalid tile.", Color.Red);
-                return;
             }
-
-            int x = Math.Min(info.x, info.x2);
-            int y = Math.Min(info.y, info.y2);
-            int x2 = Math.Max(info.x, info.x2);
-            int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Add(new SetCommand(x, y, x2, y2, e.Player.Index, ID));
+            else if (values.Count > 1)
+            {
+                e.Player.SendMessage(String.Format("More than one tile ({0}) matched.", values.Count), Color.Red);
+            }
+            else
+            {
+                int x = Math.Min(info.x, info.x2);
+                int y = Math.Min(info.y, info.y2);
+                int x2 = Math.Max(info.x, info.x2);
+                int y2 = Math.Max(info.y, info.y2);
+                CommandQueue.Add(new SetCommand(x, y, x2, y2, e.Player.Index, values[0]));
+            }
         }
         void SetWall(CommandArgs e)
         {
@@ -617,18 +642,23 @@ namespace WorldEdit
                 return;
             }
 
-            byte ID;
-            if (!(WallNames.TryGetValue(e.Parameters[0].ToLower(), out ID) || (byte.TryParse(e.Parameters[0], out ID) && ID < 32)))
+            List<byte> values = Tools.GetWallByName(e.Parameters[0].ToLower());
+            if (values.Count == 0)
             {
                 e.Player.SendMessage("Invalid wall.", Color.Red);
-                return;
             }
-
-            int x = Math.Min(info.x, info.x2);
-            int y = Math.Min(info.y, info.y2);
-            int x2 = Math.Max(info.x, info.x2);
-            int y2 = Math.Max(info.y, info.y2);
-            CommandQueue.Add(new SetWallCommand(x, y, x2, y2, e.Player.Index, ID));
+            else if (values.Count > 1)
+            {
+                e.Player.SendMessage(String.Format("More than one wall ({0}) matched.", values.Count), Color.Red);
+            }
+            else
+            {
+                int x = Math.Min(info.x, info.x2);
+                int y = Math.Min(info.y, info.y2);
+                int x2 = Math.Max(info.x, info.x2);
+                int y2 = Math.Max(info.y, info.y2);
+                CommandQueue.Add(new SetWallCommand(x, y, x2, y2, e.Player.Index, values[0]));
+            }
         }
         void Schematic(CommandArgs e)
         {

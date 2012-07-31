@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Terraria;
 
@@ -16,6 +17,50 @@ namespace WorldEdit
             {
                 File.Delete(fileName);
             }
+        }
+        public static List<byte> GetTileByName(string tile)
+        {
+            byte ID;
+            if (byte.TryParse(tile, out ID) && ID < 149)
+            {
+                return new List<byte> { ID };
+            }
+
+            List<byte> list = new List<byte>();
+            foreach (KeyValuePair<string, byte> kv in WorldEdit.TileNames)
+            {
+                if (kv.Key == tile)
+                {
+                    return new List<byte> { kv.Value };
+                }
+                if (kv.Key.StartsWith(tile))
+                {
+                    list.Add(kv.Value);
+                }
+            }
+            return list;
+        }
+        public static List<byte> GetWallByName(string wall)
+        {
+            byte ID;
+            if (byte.TryParse(wall, out ID) && ID < 32)
+            {
+                return new List<byte> { ID };
+            }
+
+            List<byte> list = new List<byte>();
+            foreach (KeyValuePair<string, byte> kv in WorldEdit.WallNames)
+            {
+                if (kv.Key == wall)
+                {
+                    return new List<byte> { kv.Value };
+                }
+                if (kv.Key.StartsWith(wall))
+                {
+                    list.Add(kv.Value);
+                }
+            }
+            return list;
         }
         public static bool HasClipboard(int plr)
         {
