@@ -69,6 +69,8 @@ namespace WorldEdit.Commands
             {
                 case 149:
                     Main.tile[i, j].active = false;
+                    Main.tile[i, j].frameX = -1;
+                    Main.tile[i, j].frameY = -1;
                     Main.tile[i, j].lava = false;
                     Main.tile[i, j].liquid = 0;
                     Main.tile[i, j].type = 0;
@@ -93,6 +95,8 @@ namespace WorldEdit.Commands
                     break;
                 default:
                     Main.tile[i, j].active = true;
+                    Main.tile[i, j].frameX = -1;
+                    Main.tile[i, j].frameY = -1;
                     Main.tile[i, j].lava = false;
                     Main.tile[i, j].liquid = 0;
                     Main.tile[i, j].type = tile;

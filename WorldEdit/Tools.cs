@@ -21,7 +21,8 @@ namespace WorldEdit
         public static List<byte> GetTileByName(string tile)
         {
             byte ID;
-            if (byte.TryParse(tile, out ID) && ID < 149)
+            if (byte.TryParse(tile, out ID) && ID < 149 &&
+                !Main.tileFrameImportant[ID] && !WorldEdit.InvalidTiles.Contains(ID))
             {
                 return new List<byte> { ID };
             }

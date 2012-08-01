@@ -31,7 +31,7 @@ namespace WorldEdit.Commands
                 }
             }
             ResetSection();
-            TShock.Players[plr].SendMessage(String.Format("Drained area. ({0})", edits), Color.Green);
+            TShock.Players[plr].SendMessage(String.Format("Drained nearby area. ({0})", edits), Color.Green);
         }
     }
 }

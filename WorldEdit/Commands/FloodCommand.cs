@@ -34,7 +34,7 @@ namespace WorldEdit.Commands
                 }
             }
             ResetSection();
-            TShock.Players[plr].SendMessage(String.Format("Flooded area. ({0})", edits), Color.Green);
+            TShock.Players[plr].SendMessage(String.Format("Flooded nearby area. ({0})", edits), Color.Green);
         }
     }
 }
