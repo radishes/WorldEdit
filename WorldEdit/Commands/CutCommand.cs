@@ -36,9 +36,14 @@ namespace WorldEdit.Commands
             {
                 for (int j = y; j <= y2; j++)
                 {
-                    if (Main.tile[i, j].active || Main.tile[i, j].wall > 0 || Main.tile[i, j].liquid > 0)
+                    if (Main.tile[i, j].active || Main.tile[i, j].wall > 0 || Main.tile[i, j].liquid > 0 || Main.tile[i, j].wire)
                     {
-                        SetTile(i, j, 149);
+                        Main.tile[i, j].active = false;
+                        Main.tile[i, j].lava = false;
+                        Main.tile[i, j].liquid = 0;
+                        Main.tile[i, j].type = 0;
+                        Main.tile[i, j].wall = 0;
+                        Main.tile[i, j].wire = false;
                         edits++;
                     }
                 }
