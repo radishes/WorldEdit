@@ -9,8 +9,8 @@ namespace WorldEdit.Commands
 {
     public class DrainCommand : WECommand
     {
-        public DrainCommand(int x, int y, int plr, int radius)
-            : base(x - radius, y - radius, x + radius, y + radius, plr)
+        public DrainCommand(int x, int y, int x2, int y2, int plr)
+            : base(x, y, x2, y2, plr)
         {
         }
 

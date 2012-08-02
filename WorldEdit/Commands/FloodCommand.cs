@@ -11,8 +11,8 @@ namespace WorldEdit.Commands
     {
         private bool lava;
 
-        public FloodCommand(int x, int y, int plr, int radius, bool lava)
-            : base(x - radius, y - radius, x + radius, y + radius, plr)
+        public FloodCommand(int x, int y, int x2, int y2, int plr, bool lava)
+            : base(x, y, x2, y2, plr)
         {
             this.lava = lava;
         }

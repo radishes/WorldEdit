@@ -111,6 +111,7 @@ namespace WorldEdit
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Cut, "/cut"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Drain, "/drain"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Expand, "/expand"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", FixGrass, "fixgrass"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Flip, "/flip"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Flood, "/flood"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Inset, "/inset"));
@@ -126,6 +127,7 @@ namespace WorldEdit
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Set, "/set"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", SetWall, "/setwall"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Shift, "/shift"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Size, "/size"));
             TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Undo, "/undo"));
 
             #region Biomes
@@ -371,9 +373,9 @@ namespace WorldEdit
 
             int npcs = 0;
             int lowX = (e.Player.TileX - radius) * 16;
-            int highX = (e.Player.TileX + radius) * 16;
-            int lowY = (e.Player.TileY - radius) * 16;
-            int highY = (e.Player.TileY + radius) * 16;
+            int highX = (e.Player.TileX + radius + 2) * 16;
+            int lowY = (e.Player.TileY - radius + 1) * 16;
+            int highY = (e.Player.TileY + radius + 1) * 16;
             foreach (NPC npc in Main.npc)
             {
                 if (npc != null && npc.active && !npc.friendly &&
@@ -519,7 +521,11 @@ namespace WorldEdit
                 e.Player.SendMessage("Invalid radius.", Color.Red);
                 return;
             }
-            CommandQueue.Add(new DrainCommand(e.Player.TileX, e.Player.TileY, e.Player.Index, radius));
+            int x = e.Player.TileX - radius;
+            int x2 = e.Player.TileX + radius + 2;
+            int y = e.Player.TileY - radius + 1;
+            int y2 = e.Player.TileY + radius + 1;
+            CommandQueue.Add(new DrainCommand(x, y, x2, y2, e.Player.Index));
         }
         void Expand(CommandArgs e)
         {
@@ -600,6 +606,26 @@ namespace WorldEdit
                     break;
             }
         }
+        void FixGrass(CommandArgs e)
+        {
+            if (e.Parameters.Count != 1)
+            {
+                e.Player.SendMessage("Invalid syntax! Proper syntax: /fixgrass <radius>", Color.Red);
+                return;
+            }
+
+            int radius;
+            if (!int.TryParse(e.Parameters[0], out radius) || radius <= 0)
+            {
+                e.Player.SendMessage("Invalid radius.", Color.Red);
+                return;
+            }
+            int x = e.Player.TileX - radius;
+            int x2 = e.Player.TileX + radius + 2;
+            int y = e.Player.TileY - radius + 1;
+            int y2 = e.Player.TileY + radius + 1;
+            CommandQueue.Add(new FixGrassCommand(x, y, x2, y2, e.Player.Index));
+        }
         void Flood(CommandArgs e)
         {
             if (e.Parameters.Count != 2)
@@ -619,7 +645,11 @@ namespace WorldEdit
                 e.Player.SendMessage("Invalid radius.", Color.Red);
                 return;
             }
-            CommandQueue.Add(new FloodCommand(e.Player.TileX, e.Player.TileY, e.Player.Index, radius, e.Parameters[0].ToLower() == "lava"));
+            int x = e.Player.TileX - radius;
+            int x2 = e.Player.TileX + radius + 2;
+            int y = e.Player.TileY - radius + 1;
+            int y2 = e.Player.TileY + radius + 1;
+            CommandQueue.Add(new FloodCommand(x, y, x2, y2, e.Player.Index, e.Parameters[0].ToLower() == "lava"));
         }
         void Flip(CommandArgs e)
         {
@@ -833,8 +863,8 @@ namespace WorldEdit
             }
 
             int x = Math.Min(info.x, info.x2);
-            int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
+            int y = Math.Min(info.y, info.y2);
             int y2 = Math.Max(info.y, info.y2);
             CommandQueue.Add(new ReplaceCommand(x, y, x2, y2, e.Player.Index, values1[0], values2[0]));
         }
@@ -876,8 +906,8 @@ namespace WorldEdit
             }
 
             int x = Math.Min(info.x, info.x2);
-            int y = Math.Min(info.y, info.y2);
             int x2 = Math.Max(info.x, info.x2);
+            int y = Math.Min(info.y, info.y2);
             int y2 = Math.Max(info.y, info.y2);
             CommandQueue.Add(new ReplaceWallCommand(x, y, x2, y2, e.Player.Index, values1[0], values2[0]));
         }
@@ -1083,8 +1113,8 @@ namespace WorldEdit
             else
             {
                 int x = Math.Min(info.x, info.x2);
-                int y = Math.Min(info.y, info.y2);
                 int x2 = Math.Max(info.x, info.x2);
+                int y = Math.Min(info.y, info.y2);
                 int y2 = Math.Max(info.y, info.y2);
                 CommandQueue.Add(new SetCommand(x, y, x2, y2, e.Player.Index, values[0]));
             }
@@ -1115,8 +1145,8 @@ namespace WorldEdit
             else
             {
                 int x = Math.Min(info.x, info.x2);
-                int y = Math.Min(info.y, info.y2);
                 int x2 = Math.Max(info.x, info.x2);
+                int y = Math.Min(info.y, info.y2);
                 int y2 = Math.Max(info.y, info.y2);
                 CommandQueue.Add(new SetWallCommand(x, y, x2, y2, e.Player.Index, values[0]));
             }
@@ -1175,6 +1205,18 @@ namespace WorldEdit
                     e.Player.SendMessage("Invalid direction.", Color.Red);
                     break;
             }
+        }
+        void Size(CommandArgs e)
+        {
+            PlayerInfo info = Players[e.Player.Index];
+            if (info.x == -1 || info.y == -1 || info.x2 == -1 || info.y2 == -1)
+            {
+                e.Player.SendMessage("Invalid selection.", Color.Red);
+                return;
+            }
+            int lenX = Math.Abs(info.x - info.x2) + 1;
+            int lenY = Math.Abs(info.y - info.y2) + 1;
+            e.Player.SendMessage(String.Format("Selection size: {0} x {1}", lenX, lenY), Color.Yellow);
         }
         void Undo(CommandArgs e)
         {
