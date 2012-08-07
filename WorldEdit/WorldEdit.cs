@@ -893,7 +893,7 @@ namespace WorldEdit
                 e.Player.SendMessage(String.Format("More than one wall ({0}) matched.", values1.Count), Color.Red);
                 return;
             }
-            List<byte> values2 = Tools.GetTileByName(e.Parameters[1].ToLower());
+            List<byte> values2 = Tools.GetWallByName(e.Parameters[1].ToLower());
             if (values2.Count == 0)
             {
                 e.Player.SendMessage("Invalid wall.", Color.Red);
