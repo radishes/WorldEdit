@@ -31,6 +31,27 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Community.CsharpSqlite">
+      <HintPath>..\..\..\..\..\..\tshock\ServerPlugins\Community.CsharpSqlite.dll</HintPath>
+    </Reference>
+    <Reference Include="Community.CsharpSqlite.SQLiteClient">
+      <HintPath>..\..\..\..\..\..\tshock\ServerPlugins\Community.CsharpSqlite.SQLiteClient.dll</HintPath>
+    </Reference>
+    <Reference Include="HttpServer">
+      <HintPath>..\..\..\..\..\..\tshock\ServerPlugins\HttpServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Data.Sqlite">
+      <HintPath>..\..\..\..\..\..\tshock\ServerPlugins\Mono.Data.Sqlite.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Data">
+      <HintPath>..\..\..\..\..\..\tshock\ServerPlugins\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Web">
+      <HintPath>..\..\..\..\..\..\tshock\ServerPlugins\MySql.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\..\..\tshock\ServerPlugins\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,10 +60,14 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="TerrariaServer">
-      <HintPath>..\..\TShockLib\TerrariaServer.exe</HintPath>
+      <HintPath>..\..\..\..\..\..\tshock\TerrariaServer.exe</HintPath>
     </Reference>
     <Reference Include="TShockAPI">
-      <HintPath>..\..\TShockLib\TShockAPI.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\tshock\ServerPlugins\TShockAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="WorldEdit, Version=1.1.1.802, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\tshock\ServerPlugins\WorldEdit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +78,9 @@
     <Compile Include="Commands\FixGrassCommand.cs" />
     <Compile Include="Commands\FlipCommand.cs" />
     <Compile Include="Commands\FloodCommand.cs" />
+    <Compile Include="Commands\MazeCommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Commands\PasteCommand.cs" />
     <Compile Include="Commands\RedoCommand.cs" />
     <Compile Include="Commands\ReplaceCommand.cs" />

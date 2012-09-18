@@ -275,5 +275,39 @@ namespace WorldEdit
 			LoadWorldSection(undoPath);
 			File.Delete(undoPath);
 		}
+
+        public static void Shuffle<T>(this IList<T> list, Random rng)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+
+        public static bool PointInRect(int x, int y, int x2, int y2, Point p)
+        {
+            if (p.X >= x &&
+                p.Y >= y &&
+                p.X <= x2 &&
+                p.Y <= y2)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool ArePointsEqual(Point p1, Point p2)
+        {
+            if ((p1.X == p2.X) && (p1.Y == p2.Y))
+                return true;
+            else
+                return false;
+        }
+
+
 	}
 }

@@ -114,6 +114,7 @@ namespace WorldEdit
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Flip, "/flip"));
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Flood, "/flood"));
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Inset, "/inset"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Maze, "/maze"));
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Outset, "/outset"));
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", Paste, "/paste"));
 			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit", PointCmd, "/point"));
@@ -718,6 +719,52 @@ namespace WorldEdit
 			}
 			e.Player.SendMessage(String.Format("Inset selection by {0}.", amount));
 		}
+        void Maze(CommandArgs e)
+        {
+            if (e.Parameters.Count != 2)
+            {
+                e.Player.SendMessage("Invalid syntax! Proper syntax: //maze <tunnel_width> <wall_width>", Color.Red);
+                return;
+            }
+
+            //int tunnel_size;
+            //if (!int.TryParse(e.Parameters[0], out tunnel_size) || tunnel_size <= 0)
+            //{
+            //    e.Player.SendMessage("Invalid tunnel size.", Color.Red);
+            //    return;
+            //}
+
+            // check that points are sent
+            PlayerInfo info = Players[e.Player.Index];
+			if (info.x == -1 || info.y == -1 || info.x2 == -1 || info.y2 == -1)
+			{
+				e.Player.SendMessage("Invalid selection. First select an area using //point", Color.Red);
+				return;
+			}
+
+			int x = Math.Min(info.x, info.x2);
+			int y = Math.Min(info.y, info.y2);
+			int x2 = Math.Max(info.x, info.x2);
+			int y2 = Math.Max(info.y, info.y2);
+
+            int tunnelWidth = 3;
+            int wallWidth = 3;
+            int algorithm = 0;
+            if (!int.TryParse(e.Parameters[0], out tunnelWidth) || tunnelWidth <= 0)
+            {
+                e.Player.SendMessage("Invalid tunnel width!", Color.Red);
+                return;
+            }
+            if (!int.TryParse(e.Parameters[1], out wallWidth) || wallWidth <= 0)
+            {
+                e.Player.SendMessage("Invalid tunnel width!", Color.Red);
+                return;
+            }
+
+
+            CommandQueue.Add(new MazeCommand(x, y, x2, y2, e.Player.Index, tunnelWidth, wallWidth, algorithm));
+
+        }
 		void Outset(CommandArgs e)
 		{
 			if (e.Parameters.Count != 1)
