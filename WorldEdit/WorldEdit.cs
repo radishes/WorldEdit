@@ -721,18 +721,11 @@ namespace WorldEdit
 		}
         void Maze(CommandArgs e)
         {
-            if (e.Parameters.Count != 2)
+            if (e.Parameters.Count < 2 || e.Parameters.Count > 4)
             {
                 e.Player.SendMessage("Invalid syntax! Proper syntax: //maze <tunnel_width> <wall_width>", Color.Red);
                 return;
             }
-
-            //int tunnel_size;
-            //if (!int.TryParse(e.Parameters[0], out tunnel_size) || tunnel_size <= 0)
-            //{
-            //    e.Player.SendMessage("Invalid tunnel size.", Color.Red);
-            //    return;
-            //}
 
             // check that points are sent
             PlayerInfo info = Players[e.Player.Index];
@@ -750,6 +743,7 @@ namespace WorldEdit
             int tunnelWidth = 3;
             int wallWidth = 3;
             int algorithm = 0;
+            int parameter = 0;
             if (!int.TryParse(e.Parameters[0], out tunnelWidth) || tunnelWidth <= 0)
             {
                 e.Player.SendMessage("Invalid tunnel width!", Color.Red);
@@ -760,9 +754,25 @@ namespace WorldEdit
                 e.Player.SendMessage("Invalid tunnel width!", Color.Red);
                 return;
             }
+            try
+            {
+                if (!int.TryParse(e.Parameters[2], out algorithm) || algorithm < 0)
+                {
+                    algorithm = 0; // default to the first alogrithm if unspecified or not understood
+                }
+            }
+            catch { algorithm = 0; }
+            try
+            {
+                if (!int.TryParse(e.Parameters[3], out parameter) || parameter < 0)
+                {
+                    parameter = 0; // default
+                }
+            }
+            catch { parameter = 0; }
 
 
-            CommandQueue.Add(new MazeCommand(x, y, x2, y2, e.Player.Index, tunnelWidth, wallWidth, algorithm));
+            CommandQueue.Add(new MazeCommand(x, y, x2, y2, e.Player.Index, tunnelWidth, wallWidth, algorithm, parameter));
 
         }
 		void Outset(CommandArgs e)
